@@ -14,7 +14,7 @@ Users can create their own test hierarchies, create test factories for generatin
 
 ## Documentation
 
-The official documentation is maintained [here](https://eth-cscs.github.io/reframe/index.html).
+The official documentation is maintained [here](https://teojgo.github.io/reframe/index.html).
 
 ### Manually generate the documentation
 

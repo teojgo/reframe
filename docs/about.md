@@ -7,6 +7,8 @@ Its main goal is to allow users to write their own regression tests without havi
 Users should be concerned only about the logical requirements of their tests.
 This allows users' regression checks to be maintained and adapted to new systems easily.
 
+Test the documentation Teo........................
+
 The user describes his test in a simple Python class and the framework takes care of all the details of the low-level interaction with the system.
 The framework is structured in such a way that with a basic knowledge of Python and minimal coding a user can write a regression test, which will be able to run out-of-the-box on a variety of systems and programming environments.
 

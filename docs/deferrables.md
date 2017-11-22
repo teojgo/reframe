@@ -5,6 +5,7 @@ Generally, writing a new sanity function is as straightforward as decorating a s
 However, it is important to understand how and when a deferrable function is evaluated, especially if your function takes as arguments the results of other deferrable functions.
 
 ## What Is a Deferrable Function?
+Check for teo.......
 
 A deferrable function is a function whose a evaluation is deferred to a later point in time.
 You can define any function as deferrable by adding the ``@reframe.utility.sanity.sanity_function`` or the ``@reframe.core.deferrable.deferrable`` decorator before its definition.
