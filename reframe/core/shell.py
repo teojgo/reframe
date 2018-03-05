@@ -22,7 +22,7 @@ class ShellScriptBuilder:
 
     @property
     def name():
-        return self._name
+        return  self._name
 
     def verbatim(self, stmt, suppress=False):
         """Append statement stmt verbatim.
