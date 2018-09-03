@@ -7,7 +7,7 @@ class Example7Test(rfm.RegressionTest):
     def __init__(self):
         super().__init__()
         self.descr = 'Matrix-vector multiplication (CUDA performance test)'
-        self.valid_systems = ['daint:gpu']
+        self.valid_systems = ['daint:gpu', 'daint:cn']
         self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-pgi']
         self.sourcepath = 'example_matrix_vector_multiplication_cuda.cu'
         self.executable_opts = ['4096', '1000']
@@ -20,7 +20,7 @@ class Example7Test(rfm.RegressionTest):
                                      self.stdout, 'Gflops', float)
         }
         self.reference = {
-            'daint:gpu': {
+            '*': {
                 'perf': (50.0, -0.1, 0.1),
             }
         }
