@@ -1,29 +1,33 @@
-import os
+import reframe as rfm
 import reframe.utility.sanity as sn
 
-from reframe.core.pipeline import RegressionTest
 
-
-class StreamTest(RegressionTest):
-    def __init__(self, **kwargs):
-        super().__init__('stream_benchmark',
-                         os.path.dirname(__file__), **kwargs)
+@rfm.required_version('>=2.14')
+@rfm.simple_test
+class StreamTest(rfm.RegressionTest):
+    def __init__(self):
+        super().__init__()
         self.descr = 'STREAM Benchmark'
         self.exclusive_access = True
         # All available systems are supported
         self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                              'kesch:cn', 'kesch:pn', 'leone:normal',
-                              'monch:compute']
+                              'kesch:cn', 'kesch:pn', 'leone:normal']
         self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu',
                                     'PrgEnv-intel', 'PrgEnv-pgi']
+        if self.current_system.name == 'kesch':
+            self.exclusive_access = True
+            self.valid_prog_environs += ['PrgEnv-cray-nompi',
+                                         'PrgEnv-gnu-nompi',
+                                         'PrgEnv-pgi-nompi']
+
         self.prgenv_flags = {
-            'PrgEnv-cray': ' -homp ',
-            'PrgEnv-gnu': ' -fopenmp -O3',
-            'PrgEnv-intel': ' -qopenmp -O3',
-            'PrgEnv-pgi': ' -mp -O3'
+            'PrgEnv-cray': ['-homp'],
+            'PrgEnv-gnu': ['-fopenmp', '-O3'],
+            'PrgEnv-intel': ['-qopenmp', '-O3'],
+            'PrgEnv-pgi': ['-mp', '-O3']
         }
         self.sourcepath = 'stream.c'
-        self.tags = {'production', 'monch_acceptance'}
+        self.build_system = 'SingleSource'
         self.sanity_patterns = sn.assert_found(
             r'Solution Validates: avg error less than', self.stdout)
         self.num_tasks = 1
@@ -41,38 +45,40 @@ class StreamTest(RegressionTest):
 
         self.variables = {
             'OMP_PLACES': 'threads',
-            'OMP_PROC_BIND': 'spread',
+            'OMP_PROC_BIND': 'spread'
         }
         self.stream_bw_reference = {
             'PrgEnv-cray': {
-                'daint:gpu': {'triad': (57123.4, -0.05, None)},
-                'daint:mc': {'triad': (55983.9, -0.05, None)},
-                'dom:gpu': {'triad': (58396.6, -0.05, None)},
-                'dom:mc': {'triad': (55963.6, -0.05, None)},
-                'kesch:cn': {'triad': (103128.9, -0.05, None)},
-                'kesch:pn': {'triad': (55966.9, -0.1, None)},
+                'daint:gpu': {'triad': (50223.0, -0.15, None)},
+                'daint:mc': {'triad': (56643.0, -0.25, None)},
+                'dom:gpu': {'triad': (50440.0, -0.15, None)},
+                'dom:mc': {'triad': (56711.0, -0.25, None)},
+                'kesch:cn': {'triad': (103129.0, -0.05, None)},
+                'kesch:pn': {'triad': (55967.0, -0.1, None)},
             },
             'PrgEnv-gnu': {
-                'daint:gpu': {'triad': (43509.7, -0.05, None)},
-                'daint:mc': {'triad': (44052.8, -0.05, None)},
-                'dom:gpu': {'triad': (44188.0, -0.05, None)},
-                'dom:mc': {'triad': (44115.3, -0.05, None)},
-                'kesch:cn': {'triad': (78045.6, -0.05, None)},
-                'kesch:pn': {'triad': (43802.5, -0.1, None)},
-                'leone:normal': {'triad': (49758.4, -0.05, None)},
-                'monch:compute': {'triad': (31010.7, -0.05, None)},
+                'daint:gpu': {'triad': (50223.0, -0.15, None)},
+                'daint:mc': {'triad': (56643.0, -0.25, None)},
+                'dom:gpu': {'triad': (50440.0, -0.15, None)},
+                'dom:mc': {'triad': (56711.0, -0.25, None)},
+                'kesch:cn': {'triad': (78046.0, -0.05, None)},
+                'kesch:pn': {'triad': (43803.0, -0.1, None)},
+                'leone:normal': {'triad': (44767.0, -0.05, None)},
+                'monch:compute': {'triad': (31011.0, -0.05, None)},
             },
             'PrgEnv-intel': {
-                'daint:gpu': {'triad': (57594.4, -0.05, None)},
-                'daint:mc': {'triad': (53394.7, -0.05, None)},
-                'dom:gpu': {'triad': (57980.4, -0.05, None)},
-                'dom:mc': {'triad': (53799.9, -0.05, None)},
+                'daint:gpu': {'triad': (50223.0, -0.15, None)},
+                'daint:mc': {'triad': (56643.0, -0.25, None)},
+                'dom:gpu': {'triad': (50440.0, -0.15, None)},
+                'dom:mc': {'triad': (56711.0, -0.25, None)},
             },
             'PrgEnv-pgi': {
-                'daint:gpu': {'triad': (44702.2, -0.05, None)},
-                'daint:mc': {'triad': (89319.0, -0.05, None)},
-                'dom:gpu': {'triad': (43925.1, -0.05, None)},
-                'dom:mc': {'triad': (89752.0, -0.05, None)},
+                'daint:gpu': {'triad': (50223.0, -0.15, None)},
+                'daint:mc': {'triad': (56643.0, -0.25, None)},
+                'dom:gpu': {'triad': (50440.0, -0.15, None)},
+                'dom:mc': {'triad': (56711.0, -0.25, None)},
+                'kesch:cn': {'triad': (78637.0, -0.1, None)},
+                'kesch:pn': {'triad': (86022.0, -0.1, None)},
             }
         }
         self.perf_patterns = {
@@ -80,25 +86,22 @@ class StreamTest(RegressionTest):
                                       self.stdout, 'triad', float)
         }
 
+        self.tags = {'production', 'monch_acceptance'}
         self.maintainers = ['RS', 'VK']
 
     def setup(self, partition, environ, **job_opts):
         self.num_cpus_per_task = self.stream_cpus_per_task[partition.fullname]
-        super().setup(partition, environ, **job_opts)
+        if self.current_system.name == 'kesch':
+            envname = environ.name.replace('-nompi', '')
+        else:
+            envname = environ.name
 
-        self.reference = self.stream_bw_reference[self.current_environ.name]
+        self.reference = self.stream_bw_reference[envname]
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
-        self.current_environ.variables['OMP_NUM_THREADS'] = \
-            str(self.num_cpus_per_task)
-        if self.current_environ.name == 'PrgEnv-pgi':
-            self.current_environ.variables['OMP_PROC_BIND'] = 'true'
+        self.variables['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
+        if envname == 'PrgEnv-pgi':
+            self.variables['OMP_PROC_BIND'] = 'true'
 
-    def compile(self):
-        prgenv_flags = self.prgenv_flags[self.current_environ.name]
-        self.current_environ.cflags = prgenv_flags
-        super().compile()
-
-
-def _get_checks(**kwargs):
-    return [StreamTest(**kwargs)]
+        self.build_system.cflags = self.prgenv_flags[envname]
+        super().setup(partition, environ, **job_opts)

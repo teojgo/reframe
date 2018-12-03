@@ -63,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ReFrame'
-copyright = '2017, CSCS'
+copyright = '2017-2018, CSCS'
 author = 'CSCS'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -237,4 +237,4 @@ texinfo_documents = [
 
 # Versioning
 scv_whitelist_branches = ('master',)
-scv_whitelist_tags = (re.compile(r'^v\d+\.\d+(\.d+)?[a-z]?'),)
+scv_whitelist_tags = (re.compile(r'^v\d+\.\d+$'),)

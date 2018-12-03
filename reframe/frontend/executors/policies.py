@@ -1,5 +1,4 @@
 import math
-import math
 import sys
 import time
 from datetime import datetime
@@ -8,16 +7,12 @@ from reframe.core.exceptions import TaskExit
 from reframe.core.logging import getlogger
 from reframe.frontend.executors import (ExecutionPolicy, RegressionTask,
                                         TaskEventListener, ABORT_REASONS)
-from reframe.frontend.statistics import TestStats
 
 
 class SerialExecutionPolicy(ExecutionPolicy):
     def __init__(self):
         super().__init__()
         self._tasks = []
-
-    def getstats(self):
-        return TestStats(self._tasks)
 
     def run_check(self, check, partition, environ):
         super().run_check(check, partition, environ)
@@ -27,8 +22,10 @@ class SerialExecutionPolicy(ExecutionPolicy):
         )
         task = RegressionTask(check)
         self._tasks.append(task)
+        self.stats.add_task(task)
         try:
             task.setup(partition, environ,
+                       sched_flex_alloc_tasks=self.sched_flex_alloc_tasks,
                        sched_account=self.sched_account,
                        sched_partition=self.sched_partition,
                        sched_reservation=self.sched_reservation,
@@ -37,6 +34,7 @@ class SerialExecutionPolicy(ExecutionPolicy):
                        sched_options=self.sched_options)
 
             task.compile()
+            task.compile_wait()
             task.run()
             task.wait()
             if not self.skip_sanity_check:
@@ -54,8 +52,8 @@ class SerialExecutionPolicy(ExecutionPolicy):
 
         except TaskExit:
             return
-        except ABORT_REASONS:
-            task.fail(sys.exc_info())
+        except ABORT_REASONS as e:
+            task.abort(e)
             raise
         except BaseException:
             task.fail(sys.exc_info())
@@ -154,15 +152,14 @@ class AsynchronousExecutionPolicy(ExecutionPolicy, TaskEventListener):
         self._ready_tasks.setdefault(p.fullname, [])
         self._max_jobs.setdefault(p.fullname, p.max_jobs)
 
-    def getstats(self):
-        return TestStats(self._tasks)
-
     def run_check(self, check, partition, environ):
         super().run_check(check, partition, environ)
         task = RegressionTask(check, self.task_listeners)
         self._tasks.append(task)
+        self.stats.add_task(task)
         try:
             task.setup(partition, environ,
+                       sched_flex_alloc_tasks=self.sched_flex_alloc_tasks,
                        sched_account=self.sched_account,
                        sched_partition=self.sched_partition,
                        sched_reservation=self.sched_reservation,
@@ -185,6 +182,8 @@ class AsynchronousExecutionPolicy(ExecutionPolicy, TaskEventListener):
                 self.printer.status('HOLD', task.check.info(), just='right')
                 self._ready_tasks[partname].append(task)
         except TaskExit:
+            if not task.failed:
+                self._reschedule(task, load_env=False)
             return
         except ABORT_REASONS as e:
             if not task.failed:
@@ -251,6 +250,7 @@ class AsynchronousExecutionPolicy(ExecutionPolicy, TaskEventListener):
             task.resume()
 
         task.compile()
+        task.compile_wait()
         task.run()
 
     def _reschedule_all(self):
@@ -274,7 +274,7 @@ class AsynchronousExecutionPolicy(ExecutionPolicy, TaskEventListener):
     def exit(self):
         self.printer.separator('short single line',
                                'waiting for spawned checks to finish')
-        pollrate = PollRateFunction(1, 60)
+        pollrate = PollRateFunction(0.2, 60)
         num_polls = 0
         t_start = datetime.now()
         while self._running_tasks or self._retired_tasks:
@@ -298,10 +298,10 @@ class AsynchronousExecutionPolicy(ExecutionPolicy, TaskEventListener):
                     time.sleep(t)
 
             except TaskExit:
-                pass
+                self._reschedule_all()
             except ABORT_REASONS as e:
                 self._failall(e)
                 raise
 
         self.printer.separator('short single line',
-                               'all spawned checks have finished')
+                               'all spawned checks have finished\n')

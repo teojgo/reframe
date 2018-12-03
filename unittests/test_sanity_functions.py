@@ -6,7 +6,7 @@ from tempfile import NamedTemporaryFile
 import reframe.utility.sanity as sn
 from reframe.core.deferrable import evaluate, make_deferrable
 from reframe.core.exceptions import SanityError
-from unittests.fixtures import TEST_RESOURCES
+from unittests.fixtures import TEST_RESOURCES_CHECKS
 
 
 class TestDeferredBuiltins(unittest.TestCase):
@@ -54,6 +54,15 @@ class TestDeferredBuiltins(unittest.TestCase):
         expr = sn.all(l)
         l[2] = 1
         self.assertTrue(expr)
+
+    def test_allx(self):
+        self.assertTrue(sn.allx([1, 1, 1]))
+        self.assertFalse(sn.allx([1, 0]))
+        self.assertFalse(sn.allx([]))
+        self.assertFalse(sn.allx(i for i in range(0)))
+        self.assertTrue(sn.allx(i for i in range(1, 2)))
+        with self.assertRaises(TypeError):
+            sn.evaluate(sn.allx(None))
 
     def test_any(self):
         l = [0, 0, 1]
@@ -155,7 +164,8 @@ class TestDeferredBuiltins(unittest.TestCase):
 
 class TestAsserts(unittest.TestCase):
     def setUp(self):
-        self.utf16_file = os.path.join(TEST_RESOURCES, 'src', 'homer.txt')
+        self.utf16_file = os.path.join(TEST_RESOURCES_CHECKS,
+                                       'src', 'homer.txt')
 
     def test_assert_true(self):
         self.assertTrue(sn.assert_true(True))
@@ -166,9 +176,9 @@ class TestAsserts(unittest.TestCase):
                                evaluate, sn.assert_true(False))
         self.assertRaisesRegex(SanityError, '0 is not True',
                                evaluate, sn.assert_true(0))
-        self.assertRaisesRegex(SanityError, '\[\] is not True',
+        self.assertRaisesRegex(SanityError, r'\[\] is not True',
                                evaluate, sn.assert_true([]))
-        self.assertRaisesRegex(SanityError, 'range\(.+\) is not True',
+        self.assertRaisesRegex(SanityError, r'range\(.+\) is not True',
                                evaluate, sn.assert_true(range(0)))
         self.assertRaisesRegex(SanityError, 'not true',
                                evaluate, sn.assert_true(0, msg='not true'))
@@ -181,7 +191,7 @@ class TestAsserts(unittest.TestCase):
                                evaluate, sn.assert_true(make_deferrable(False)))
         self.assertRaisesRegex(SanityError, '0 is not True',
                                evaluate, sn.assert_true(make_deferrable(0)))
-        self.assertRaisesRegex(SanityError, '\[\] is not True',
+        self.assertRaisesRegex(SanityError, r'\[\] is not True',
                                evaluate, sn.assert_true(make_deferrable([])))
 
     def test_assert_false(self):
@@ -193,9 +203,9 @@ class TestAsserts(unittest.TestCase):
                                evaluate, sn.assert_false(True))
         self.assertRaisesRegex(SanityError, '1 is not False',
                                evaluate, sn.assert_false(1))
-        self.assertRaisesRegex(SanityError, '\[1\] is not False',
+        self.assertRaisesRegex(SanityError, r'\[1\] is not False',
                                evaluate, sn.assert_false([1]))
-        self.assertRaisesRegex(SanityError, 'range\(.+\) is not False',
+        self.assertRaisesRegex(SanityError, r'range\(.+\) is not False',
                                evaluate, sn.assert_false(range(1)))
 
     def test_assert_false_with_deferrables(self):
@@ -206,7 +216,7 @@ class TestAsserts(unittest.TestCase):
                                evaluate, sn.assert_false(make_deferrable(True)))
         self.assertRaisesRegex(SanityError, '1 is not False',
                                evaluate, sn.assert_false(make_deferrable(1)))
-        self.assertRaisesRegex(SanityError, '\[1\] is not False',
+        self.assertRaisesRegex(SanityError, r'\[1\] is not False',
                                evaluate, sn.assert_false(make_deferrable([1])))
 
     def test_assert_eq(self):
@@ -290,24 +300,24 @@ class TestAsserts(unittest.TestCase):
 
     def test_assert_in(self):
         self.assertTrue(sn.assert_in(1, [1, 2, 3]))
-        self.assertRaisesRegex(SanityError, '0 is not in \[1, 2, 3\]',
+        self.assertRaisesRegex(SanityError, r'0 is not in \[1, 2, 3\]',
                                evaluate, sn.assert_in(0, [1, 2, 3]))
 
     def test_assert_in_with_deferrables(self):
         self.assertTrue(sn.assert_in(1, make_deferrable([1, 2, 3])))
         self.assertRaisesRegex(
-            SanityError, '0 is not in \[1, 2, 3\]',
+            SanityError, r'0 is not in \[1, 2, 3\]',
             evaluate, sn.assert_in(0, make_deferrable([1, 2, 3])))
 
     def test_assert_not_in(self):
         self.assertTrue(sn.assert_not_in(0, [1, 2, 3]))
-        self.assertRaisesRegex(SanityError, '1 is in \[1, 2, 3\]',
+        self.assertRaisesRegex(SanityError, r'1 is in \[1, 2, 3\]',
                                evaluate, sn.assert_not_in(1, [1, 2, 3]))
 
     def test_assert_not_in_with_deferrables(self):
         self.assertTrue(sn.assert_not_in(0, make_deferrable([1, 2, 3])))
         self.assertRaisesRegex(
-            SanityError, '1 is in \[1, 2, 3\]',
+            SanityError, r'1 is in \[1, 2, 3\]',
             evaluate, sn.assert_not_in(1, make_deferrable([1, 2, 3])))
 
     def test_assert_bounded(self):
@@ -316,13 +326,13 @@ class TestAsserts(unittest.TestCase):
         self.assertTrue(sn.assert_bounded(1, lower=-1.5))
         self.assertTrue(sn.assert_bounded(1))
         self.assertRaisesRegex(SanityError,
-                               'value 1 not within bounds -0\.5\.\.0\.5',
+                               r'value 1 not within bounds -0\.5\.\.0\.5',
                                evaluate, sn.assert_bounded(1, -0.5, 0.5))
         self.assertRaisesRegex(SanityError,
-                               'value 1 not within bounds -inf\.\.0\.5',
+                               r'value 1 not within bounds -inf\.\.0\.5',
                                evaluate, sn.assert_bounded(1, upper=0.5))
         self.assertRaisesRegex(SanityError,
-                               'value 1 not within bounds 1\.5\.\.inf',
+                               r'value 1 not within bounds 1\.5\.\.inf',
                                evaluate, sn.assert_bounded(1, lower=1.5))
         self.assertRaisesRegex(
             SanityError, 'value 1 is out of bounds', evaluate,
@@ -340,46 +350,55 @@ class TestAsserts(unittest.TestCase):
         self.assertTrue(sn.assert_reference(-0.9, -1, upper_thres=0.1))
         self.assertTrue(sn.assert_reference(-0.9, -1))
 
+        # Check upper threshold values greater than 1
+        self.assertTrue(sn.assert_reference(20.0, 10.0, None, 3.0))
+        self.assertTrue(sn.assert_reference(-50.0, -20.0, -2.0, 0.5))
+
         self.assertRaisesRegex(
             SanityError,
-            '0\.5 is beyond reference value 1 \(l=0\.8, u=1\.1\)',
+            r'0\.5 is beyond reference value 1 \(l=0\.8, u=1\.1\)',
             evaluate, sn.assert_reference(0.5, 1, -0.2, 0.1)
         )
         self.assertRaisesRegex(
             SanityError,
-            '0\.5 is beyond reference value 1 \(l=0\.8, u=inf\)',
+            r'0\.5 is beyond reference value 1 \(l=0\.8, u=inf\)',
             evaluate, sn.assert_reference(0.5, 1, -0.2)
         )
         self.assertRaisesRegex(
             SanityError,
-            '1\.5 is beyond reference value 1 \(l=0\.8, u=1\.1\)',
+            r'1\.5 is beyond reference value 1 \(l=0\.8, u=1\.1\)',
             evaluate, sn.assert_reference(1.5, 1, -0.2, 0.1)
         )
         self.assertRaisesRegex(
             SanityError,
-            '1\.5 is beyond reference value 1 \(l=-inf, u=1\.1\)',
+            r'1\.5 is beyond reference value 1 \(l=-inf, u=1\.1\)',
             evaluate, sn.assert_reference(
                 1.5, 1, lower_thres=None, upper_thres=0.1)
         )
         self.assertRaisesRegex(
             SanityError,
-            '-0\.8 is beyond reference value -1 \(l=-1\.2, u=-0\.9\)',
+            r'-0\.8 is beyond reference value -1 \(l=-1\.2, u=-0\.9\)',
             evaluate, sn.assert_reference(-0.8, -1, -0.2, 0.1)
         )
 
         # Check invalid thresholds
         self.assertRaisesRegex(SanityError,
-                               'invalid high threshold value: -0\.1',
+                               r'invalid high threshold value: -0\.1',
                                evaluate, sn.assert_reference(0.9, 1, -0.2, -0.1))
         self.assertRaisesRegex(SanityError,
-                               'invalid high threshold value: 1\.1',
-                               evaluate, sn.assert_reference(0.9, 1, -0.2, 1.1))
-        self.assertRaisesRegex(SanityError,
-                               'invalid low threshold value: 0\.2',
+                               r'invalid low threshold value: 0\.2',
                                evaluate, sn.assert_reference(0.9, 1, 0.2, 0.1))
         self.assertRaisesRegex(SanityError,
-                               'invalid low threshold value: 1\.2',
+                               r'invalid low threshold value: 1\.2',
                                evaluate, sn.assert_reference(0.9, 1, 1.2, 0.1))
+
+        # check invalid thresholds greater than 1
+        self.assertRaisesRegex(SanityError,
+                               r'invalid low threshold value: -2\.0',
+                               evaluate, sn.assert_reference(0.9, 1, -2.0, 0.1))
+        self.assertRaisesRegex(SanityError,
+                               r'invalid high threshold value: 1\.5',
+                               evaluate, sn.assert_reference(-1.5, -1, -0.5, 1.5))
 
     def _write_tempfile(self):
         ret = None
@@ -393,11 +412,11 @@ class TestAsserts(unittest.TestCase):
 
     def test_assert_found(self):
         tempfile = self._write_tempfile()
-        self.assertTrue(sn.assert_found('Step: \d+', tempfile))
+        self.assertTrue(sn.assert_found(r'Step: \d+', tempfile))
         self.assertTrue(sn.assert_found(
-            'Step: \d+', make_deferrable(tempfile)))
+            r'Step: \d+', make_deferrable(tempfile)))
         self.assertRaises(SanityError, evaluate,
-                          sn.assert_found('foo: \d+', tempfile))
+                          sn.assert_found(r'foo: \d+', tempfile))
         os.remove(tempfile)
 
     def test_assert_found_encoding(self):
@@ -407,17 +426,17 @@ class TestAsserts(unittest.TestCase):
 
     def test_assert_not_found(self):
         tempfile = self._write_tempfile()
-        self.assertTrue(sn.assert_not_found('foo: \d+', tempfile))
+        self.assertTrue(sn.assert_not_found(r'foo: \d+', tempfile))
         self.assertTrue(
-            sn.assert_not_found('foo: \d+', make_deferrable(tempfile))
+            sn.assert_not_found(r'foo: \d+', make_deferrable(tempfile))
         )
         self.assertRaises(SanityError, evaluate,
-                          sn.assert_not_found('Step: \d+', tempfile))
+                          sn.assert_not_found(r'Step: \d+', tempfile))
         os.remove(tempfile)
 
     def test_assert_not_found_encoding(self):
         self.assertTrue(
-            sn.assert_not_found('Iliad', self.utf16_file, encoding='utf-16')
+            sn.assert_not_found(r'Iliad', self.utf16_file, encoding='utf-16')
         )
 
 
@@ -464,13 +483,37 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertEqual(0, sn.count(range(0)))
         self.assertEqual(0, sn.count(myrange(0)))
 
+    def test_count_uniq(self):
+        # Use a custom generator for testing
+        def my_mod_range(n, mod=2):
+            for i in range(n):
+                yield i % mod
+
+        self.assertEqual(4, sn.count_uniq([1, 2, 3, 4, 4, 3, 2, 1]))
+        self.assertEqual(1, sn.count_uniq((1, 1, 1)))
+        self.assertEqual(3, sn.count_uniq({1, 2, 3, 2, 3}))
+        self.assertEqual(3, sn.count_uniq({'a': 1, 'b': 2, 'c': 3}))
+        self.assertEqual(2, sn.count_uniq(my_mod_range(10)))
+        self.assertEqual(3, sn.count_uniq(my_mod_range(10, 3)))
+
+        # Test empty sequences
+        self.assertEqual(0, sn.count_uniq([]))
+        self.assertEqual(0, sn.count_uniq({}))
+        self.assertEqual(0, sn.count_uniq(set()))
+        self.assertEqual(0, sn.count_uniq(my_mod_range(0)))
+        self.assertEqual(0, sn.count_uniq(range(0)))
+
+        # Test deferred expressions
+        d = [1, 2, 2, 1]
+        self.assertEqual(2, sn.count_uniq(make_deferrable(d)))
+
     def test_glob(self):
-        filepatt = os.path.join(TEST_RESOURCES, '*.py')
+        filepatt = os.path.join(TEST_RESOURCES_CHECKS, '*.py')
         self.assertTrue(sn.glob(filepatt))
         self.assertTrue(sn.glob(make_deferrable(filepatt)))
 
     def test_iglob(self):
-        filepatt = os.path.join(TEST_RESOURCES, '*.py')
+        filepatt = os.path.join(TEST_RESOURCES_CHECKS, '*.py')
         self.assertTrue(sn.count(sn.iglob(filepatt)))
         self.assertTrue(sn.count(sn.iglob(make_deferrable(filepatt))))
 
@@ -485,7 +528,8 @@ class TestUtilityFunctions(unittest.TestCase):
 class TestPatternMatchingFunctions(unittest.TestCase):
     def setUp(self):
         self.tempfile = None
-        self.utf16_file = os.path.join(TEST_RESOURCES, 'src', 'homer.txt')
+        self.utf16_file = os.path.join(TEST_RESOURCES_CHECKS,
+                                       'src', 'homer.txt')
         with NamedTemporaryFile('wt', delete=False) as fp:
             self.tempfile = fp.name
             fp.write('Step: 1\n')
@@ -496,7 +540,7 @@ class TestPatternMatchingFunctions(unittest.TestCase):
         os.remove(self.tempfile)
 
     def test_findall(self):
-        res = evaluate(sn.findall('Step: \d+', self.tempfile))
+        res = evaluate(sn.findall(r'Step: \d+', self.tempfile))
         self.assertEqual(3, len(res))
 
         res = evaluate(sn.findall('Step:.*', self.tempfile))
@@ -510,60 +554,60 @@ class TestPatternMatchingFunctions(unittest.TestCase):
             self.assertEqual(expected, match.group(0))
 
         # Check groups
-        res = evaluate(sn.findall('Step: (?P<no>\d+)', self.tempfile))
+        res = evaluate(sn.findall(r'Step: (?P<no>\d+)', self.tempfile))
         for step, match in enumerate(res, start=1):
             self.assertEqual(step, int(match.group(1)))
             self.assertEqual(step, int(match.group('no')))
 
     def test_findall_encoding(self):
         res = evaluate(
-            sn.findall(r'Odyssey', self.utf16_file, encoding='utf-16')
+            sn.findall('Odyssey', self.utf16_file, encoding='utf-16')
         )
         self.assertEqual(1, len(res))
 
     def test_findall_error(self):
         self.assertRaises(SanityError, evaluate,
-                          sn.findall('Step: \d+', 'foo.txt'))
+                          sn.findall(r'Step: \d+', 'foo.txt'))
 
     def test_extractall(self):
         # Check numeric groups
-        res = evaluate(sn.extractall('Step: (?P<no>\d+)', self.tempfile, 1))
+        res = evaluate(sn.extractall(r'Step: (?P<no>\d+)', self.tempfile, 1))
         for expected, v in enumerate(res, start=1):
             self.assertEqual(str(expected), v)
 
         # Check named groups
-        res = evaluate(sn.extractall('Step: (?P<no>\d+)', self.tempfile, 'no'))
+        res = evaluate(sn.extractall(r'Step: (?P<no>\d+)', self.tempfile, 'no'))
         for expected, v in enumerate(res, start=1):
             self.assertEqual(str(expected), v)
 
         # Check convert function
-        res = evaluate(sn.extractall('Step: (?P<no>\d+)',
+        res = evaluate(sn.extractall(r'Step: (?P<no>\d+)',
                                      self.tempfile, 'no', int))
         for expected, v in enumerate(res, start=1):
             self.assertEqual(expected, v)
 
     def test_extractall_encoding(self):
         res = evaluate(
-            sn.extractall(r'Odyssey', self.utf16_file, encoding='utf-16')
+            sn.extractall('Odyssey', self.utf16_file, encoding='utf-16')
         )
         self.assertEqual(1, len(res))
 
     def test_extractall_error(self):
         self.assertRaises(SanityError, evaluate,
-                          sn.extractall('Step: (\d+)', 'foo.txt', 1))
+                          sn.extractall(r'Step: (\d+)', 'foo.txt', 1))
         self.assertRaises(
             SanityError, evaluate,
-            sn.extractall('Step: (?P<no>\d+)',
+            sn.extractall(r'Step: (?P<no>\d+)',
                           self.tempfile, conv=int)
         )
         self.assertRaises(SanityError, evaluate,
-                          sn.extractall('Step: (\d+)', self.tempfile, 2))
+                          sn.extractall(r'Step: (\d+)', self.tempfile, 2))
         self.assertRaises(
             SanityError, evaluate,
-            sn.extractall('Step: (?P<no>\d+)', self.tempfile, 'foo'))
+            sn.extractall(r'Step: (?P<no>\d+)', self.tempfile, 'foo'))
 
     def test_extractall_custom_conv(self):
-        res = evaluate(sn.extractall('Step: (\d+)', self.tempfile, 1,
+        res = evaluate(sn.extractall(r'Step: (\d+)', self.tempfile, 1,
                                      lambda x: int(x)))
         for expected, v in enumerate(res, start=1):
             self.assertEqual(expected, v)
@@ -571,7 +615,7 @@ class TestPatternMatchingFunctions(unittest.TestCase):
         # Check error in custom function
         self.assertRaises(
             SanityError, evaluate,
-            sn.extractall('Step: (\d+)', self.tempfile,
+            sn.extractall(r'Step: (\d+)', self.tempfile,
                           conv=lambda x: int(x))
         )
 
@@ -582,20 +626,20 @@ class TestPatternMatchingFunctions(unittest.TestCase):
 
         self.assertRaises(
             SanityError, evaluate,
-            sn.extractall('Step: (\d+)', self.tempfile, conv=C())
+            sn.extractall(r'Step: (\d+)', self.tempfile, conv=C())
         )
 
     def test_extractsingle(self):
         for i in range(1, 4):
             self.assertEqual(
                 i,
-                sn.extractsingle('Step: (\d+)', self.tempfile, 1, int, i-1)
+                sn.extractsingle(r'Step: (\d+)', self.tempfile, 1, int, i-1)
             )
 
         # Test out of bounds access
         self.assertRaises(
             SanityError, evaluate,
-            sn.extractsingle('Step: (\d+)', self.tempfile, 1, int, 100)
+            sn.extractsingle(r'Step: (\d+)', self.tempfile, 1, int, 100)
         )
 
     def test_extractsingle_encoding(self):
