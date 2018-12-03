@@ -1,0 +1,25 @@
+# File : .pep8speaks.yml
+
+message:
+    opened:
+        header: "Hello @{name}, Thank you for submitting the Pull Request !"
+        footer: "Please consult the [Coding Style Guide](https://github.com/eth-cscs/reframe/wiki/coding-style-guide)"
+    updated:
+        header: "Hello @{name}, Thank you for updating !"
+        footer: "Please consult the [Coding Style Guide](https://github.com/eth-cscs/reframe/wiki/coding-style-guide)"
+    no_errors: "Cheers ! There are no PEP8 issues in this Pull Request. :beers: "
+
+scanner:
+    diff_only: False
+
+pycodestyle:
+    max-line-length: 79
+    ignore:
+        - E129
+        - E221
+        - E226
+        - E241
+        - E272
+
+only_mention_files_with_errors: True
+descending_issues_order: False
