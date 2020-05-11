@@ -1,0 +1,19 @@
+def tag = env.TAG_NAME
+
+stage('Test stage') {
+    node('master') {
+            println("Triggered by tag ${tag}")
+    }
+}
+
+stage('Deploy Tests') {
+    node('dom') {
+        sh(returnStatus: true,
+           script: """git clone git@github.com:eth-cscs/reframe-tests.git
+                      cd reframe-tests
+                      git tag -a -m "test tag" $TAG_NAME
+                      git archive --format=tar.gz --prefix=reframe-tests-${tag}/ ${tag} -o reframe-tests-${tag}.tar.gz
+                      ls -lha""")
+            deleteDir()
+   }
+}
