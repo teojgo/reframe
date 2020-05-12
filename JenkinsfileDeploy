@@ -1,4 +1,5 @@
 def tag = env.TAG_NAME
+def version = tag.substring(1)
 
 stage('Test stage') {
     node('master') {
@@ -12,9 +13,9 @@ stage('Deploy Tests') {
            script: """git clone git@github.com:eth-cscs/reframe-tests.git
                       cd reframe-tests
                       git tag -a -m "test tag" -f ${tag}
-                      git archive --format=tar.gz --prefix=reframe-tests-${tag}/ ${tag} -o reframe-tests-${tag}.tar.gz
+                      git archive --format=tar.gz --prefix=reframe-tests-${version}/ ${tag} -o reframe-tests-${version}.tar.gz
                       git push origin -f ${tag}
-                      cp reframe-tests-${tag}.tar.gz /apps/common/easybuild/sources/r/reframe
+                      cp reframe-tests-${version}.tar.gz /apps/common/easybuild/sources/r/reframe
                       ls -lha""")
             deleteDir()
    }
