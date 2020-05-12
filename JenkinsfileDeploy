@@ -30,7 +30,7 @@ stage('Production PR') {
                    script: """#!/bin/bash -l
                               module load daint-gpu
                               module load hub
-                              git clone https://github.com:eth-cscs/production.git
+                              git clone https://github.com/eth-cscs/production.git
                               cd production/easybuild/easyconfigs/r/reframe
                               git checkout -b reframe/${version}
                               sed 's/3.0-dev5/${version}/g' reframe-3.0-dev5.eb > reframe-${version}.eb
@@ -38,7 +38,6 @@ stage('Production PR') {
                               git commit -m "Add recipe for Reframe version ${version}"
                               hub pull-request -r teojgo,vkarak -m "[WIP] Add Reframe ${version}"
                               """)
-
             deleteDir()
         }
     }
