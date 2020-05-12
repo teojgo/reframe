@@ -37,7 +37,7 @@ stage('Production PR') {
                               git add reframe-${version}.eb
                               git commit -m "Add recipe for Reframe version ${version}"
                               git push origin HEAD
-                              hub pull-request -r teojgo,vkarak -m "[WIP] Add Reframe ${version}"
+                              hub pull-request -r teojgo,vkarak -m "[dom TSAtds] Add Reframe ${version}"
                               """)
             deleteDir()
         }
