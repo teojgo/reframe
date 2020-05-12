@@ -11,8 +11,10 @@ stage('Deploy Tests') {
         sh(returnStatus: true,
            script: """git clone git@github.com:eth-cscs/reframe-tests.git
                       cd reframe-tests
-                      git tag -a -m "test tag" $TAG_NAME
+                      git tag -a -m "test tag" -f ${tag}
                       git archive --format=tar.gz --prefix=reframe-tests-${tag}/ ${tag} -o reframe-tests-${tag}.tar.gz
+                      git push origin -f ${tag}
+                      cp reframe-tests-${tag}.tar.gz /apps/common/easybuild/sources/r/reframe
                       ls -lha""")
             deleteDir()
    }
