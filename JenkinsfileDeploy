@@ -10,7 +10,8 @@ stage('Test stage') {
 stage('Deploy Tests') {
     node('dom') {
         sh(returnStatus: true,
-           script: """git clone git@github.com:eth-cscs/reframe-tests.git
+           script: """#!/bin/bash -l
+                      git clone git@github.com:eth-cscs/reframe-tests.git
                       cd reframe-tests
                       git tag -a -m "test tag" -f ${tag}
                       git archive --format=tar.gz --prefix=reframe-tests-${version}/ ${tag} -o reframe-tests-${version}.tar.gz
