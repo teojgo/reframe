@@ -35,7 +35,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build Image for ${{ matrix.modules-version }}
       run: |
-        docker build -f ci-scripts/dockerfiles/${{ matrix.modules-version }}.dockerfile -t reframe:${{ matrix.modules-version }}
+        docker build -f ci-scripts/dockerfiles/${{ matrix.modules-version }}.dockerfile -t reframe:${{ matrix.modules-version }} .
     - name: Run Unittests
       run: |
         docker run reframe:${{ matrix.modules-version }}
