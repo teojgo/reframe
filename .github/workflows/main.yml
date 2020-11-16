@@ -33,7 +33,7 @@ jobs:
     - name: Setup Python for Coverage
       uses: actions/setup-python@v2
     with:
-        python-version: 3.8
+      python-version: 3.8
       run: |
         pip install -r requirements.txt
         pip install codecov
