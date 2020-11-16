@@ -3,7 +3,7 @@ name: ReFrame CI
 on: [push]
 
 jobs:
-  build:
+  unittest:
 
     runs-on: ubuntu-latest
     strategy:
@@ -24,7 +24,28 @@ jobs:
       run: |
         ./test_reframe.py
 
-  modules:
+  coverage:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      uses: actions/setup-python@v2
+    with:
+        python-version: 3.8
+    - name: Setup Python for Coverage
+      run: |
+        pip install -r requirements.txt
+        pip install codecov
+        coverage run --source=reframe ./test_reframe.py
+    - name: Coverage Calculation
+      run: |
+        coverage run --source=reframe ./test_reframe.py
+        coverage report -m
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+
+  modulestest:
 
     runs-on: ubuntu-latest
     strategy:
@@ -39,5 +60,3 @@ jobs:
     - name: Run Unittests
       run: |
         docker run reframe:${{ matrix.modules-version }}
-
-
