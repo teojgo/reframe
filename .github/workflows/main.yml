@@ -64,7 +64,6 @@ jobs:
         python-version: 3.8
     - name: Unused Imports Check
       run: |
-        pip install flake8
-        echo $CHANGED_PYTHON_FILES
-        for f in $CHANGED_PYTHON_FILES; do echo "$f"; done;
+        echo 'Checking Python Files:'
+        for f in "$CHANGED_PYTHON_FILES"; do echo "$f"; done;
         flake8 --select F401 $CHANGED_PYTHON_FILES
