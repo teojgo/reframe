@@ -12,16 +12,13 @@ import socket
 import sys
 import time
 
-import reframe
 import reframe.core.runtime as rt
 import reframe.frontend.dependencies as dependencies
 import reframe.frontend.executors as executors
 import reframe.frontend.executors.policies as policies
-import reframe.utility as util
 import reframe.utility.jsonext as jsonext
 import reframe.utility.osext as osext
 from reframe.core.exceptions import (AbortTaskError,
-                                     JobNotStartedError,
                                      ReframeForceExitError,
                                      TaskDependencyError)
 from reframe.frontend.loader import RegressionCheckLoader

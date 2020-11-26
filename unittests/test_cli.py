@@ -5,14 +5,12 @@
 
 import itertools
 import os
-import pathlib
 import pytest
 import re
 import sys
-from contextlib import redirect_stdout, redirect_stderr, suppress
+from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
 
-import reframe.core.config as config
 import reframe.core.environments as env
 import reframe.core.logging as logging
 import reframe.core.runtime as rt

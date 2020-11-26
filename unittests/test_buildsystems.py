@@ -3,14 +3,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import abc
-import functools
 import pytest
 
 import reframe.core.buildsystems as bs
 import unittests.fixtures as fixtures
 from reframe.core.environments import ProgEnvironment
-from reframe.core.exceptions import BuildSystemError
 
 
 @pytest.fixture
