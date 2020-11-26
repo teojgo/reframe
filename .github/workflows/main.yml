@@ -47,14 +47,14 @@ jobs:
       run: |
         docker run reframe:${{ matrix.modules-version }}
 
-  pylint:
+  flake8:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Unused Imports Check
       with:
         fetch-depth: 0
-    - name: Unuses Import Check
-    - uses: actions/setup-python@v2
+      uses: actions/setup-python@v2
       with:
         python-version: 3.8
       run: |
