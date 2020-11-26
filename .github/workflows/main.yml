@@ -60,7 +60,9 @@ jobs:
     - name: Unused Imports Check
       run: |
         pip install flake8
-        echo "CHANGED_PYTHON_FILES=`git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }} | grep '.py'`" >> $GITHUB_ENV
+        echo 'CHANGED_PYTHON_FILES<<EOF' >> $GITHUB_ENV
+        git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }} | grep '.py' >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
         echo $CHANGED_PYTHON_FILES
         #for f in $CHANGED_PYTHON_FILES; do echo "$f"; done
         #flake8 --select F401 $CHANGED_PYTHON_FILES
