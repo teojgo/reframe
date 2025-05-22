@@ -526,13 +526,13 @@ class CMake(ConfigureBasedBuildSystem):
 
     This build system will emit the following commands:
 
-    1. Create a build directory if :attr:`builddir` is not :class:`None` and
-       change to it.
-    2. Invoke ``cmake`` to configure the project by setting the corresponding
-       CMake flags for compilers and compiler flags.
-    3. Issue ``make`` to compile the code.
+    1. Use Cmake to configure the project using :attr:`builddir` or ``build``
+       as the build directory, :attr:`srcdir` or ``.`` as the source directory,
+       using corresponding variables for compilers and compiler flags.
+    2. Invoke ``cmake`` to build the project using the corresponding target
+       flags.
+    3. Change to the :attr:`builddir` directory.
     '''
-
     def _combine_flags(self, cppflags, xflags):
         if not cppflags:
             return xflags
@@ -544,15 +544,8 @@ class CMake(ConfigureBasedBuildSystem):
         return ret
 
     def emit_build_commands(self, environ):
-        prepare_cmd = []
-        if self.srcdir:
-            prepare_cmd += [f'cd {self.srcdir}']
-
-        if self.builddir:
-            prepare_cmd += [f'mkdir -p {self.builddir}',
-                            f'cd {self.builddir}']
-
-        cmake_cmd = ['cmake']
+        builddir = self.builddir or 'build'
+        cmake_cmd = [f'cmake -B {builddir}']
         cc = self._cc(environ)
         cxx = self._cxx(environ)
         ftn = self._ftn(environ)
@@ -593,21 +586,15 @@ class CMake(ConfigureBasedBuildSystem):
         if self.config_opts:
             cmake_cmd += self.config_opts
 
-        if self.builddir:
-            cmake_cmd += [os.path.join(
-                os.path.relpath(self.configuredir, self.builddir)
-            )]
-        else:
-            cmake_cmd += [self.configuredir]
-
-        make_cmd = ['make -j']
+        cmake_cmd += [self.srcdir or '.']
+        make_cmd = [f'cmake --build {builddir} -j']
         if self.max_concurrency is not None:
             make_cmd += [str(self.max_concurrency)]
 
         if self.make_opts:
-            make_cmd += self.make_opts
+            make_cmd += [f'-t {opt}' for opt in self.make_opts]
 
-        return prepare_cmd + [' '.join(cmake_cmd), ' '.join(make_cmd)]
+        return [' '.join(cmake_cmd), ' '.join(make_cmd), f'cd {builddir}']
 
 
 class Autotools(ConfigureBasedBuildSystem):
@@ -619,7 +606,7 @@ class Autotools(ConfigureBasedBuildSystem):
        change to it.
     2. Invoke ``configure`` to configure the project by setting the
        corresponding flags for compilers and compiler flags.
-    3. Issue ``make`` to compile the code.
+    3. Issue ``make`` to compile the code .
     '''
 
     def emit_build_commands(self, environ):
